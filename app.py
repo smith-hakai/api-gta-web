@@ -1,22 +1,22 @@
-
 import streamlit as st
+import google.generativeai as genai
+from PIL import Image
 
-# Configuración de la página
+# Configuración de la API Key desde los Secrets de Streamlit
+genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
+
 st.set_page_config(page_title="API GTA - GTAMODE", page_icon="🚗")
 
-# Estilo visual
 st.title("🚗 API GTA")
 st.subheader("Transforma tu realidad al estilo Los Santos")
-st.write("Sube tus imágenes para activar el **GTAMODE**.")
 
 st.divider()
 
-# Columnas para subir archivos
 col1, col2 = st.columns(2)
 
 with col1:
     st.header("1. Entorno Real")
-    fondo = st.file_uploader("Sube la foto de la calle o lugar", type=['png', 'jpg', 'jpeg'])
+    fondo = st.file_uploader("Sube la foto del lugar", type=['png', 'jpg', 'jpeg'])
     if fondo:
         st.image(fondo, caption="Fondo seleccionado")
 
@@ -28,14 +28,33 @@ with col2:
 
 st.divider()
 
-# Botón de acción
 if st.button("🚀 ACTIVAR GTAMODE"):
     if fondo and vehiculo:
-        st.info("Conectando con la API... Preparando tu imagen con estilo San Andreas.")
-        # Aquí irá la lógica de conexión que configuraremos después
+        with st.spinner("Fusionando imágenes con estilo San Andreas..."):
+            try:
+                # Cargamos las imágenes
+                img_fondo = Image.open(fondo)
+                img_vehiculo = Image.open(vehiculo)
+                
+                # Configuramos el modelo
+                model = genai.GenerativeModel('gemini-1.5-flash')
+                
+                # Instrucción para la IA
+                prompt = (
+                    "Analiza estas dos imágenes. La primera es un entorno real y la segunda es un vehículo de GTA. "
+                    "Describe detalladamente cómo se vería el vehículo integrado en ese entorno real, "
+                    "ajustando la iluminación, sombras y el estilo visual para que parezca una captura de GTA VI."
+                )
+                
+                # Generamos la respuesta
+                response = model.generate_content([prompt, img_fondo, img_vehiculo])
+                
+                st.success("¡Análisis de GTAMODE completado!")
+                st.write(response.text)
+                
+            except Exception as e:
+                st.error(f"Error al conectar con la IA: {e}")
     else:
-        st.warning("Por favor, sube ambas imágenes para continuar.")
+        st.warning("Faltan imágenes para procesar.")
 
-st.sidebar.title("Configuración")
-st.sidebar.write("Proyecto: API GTA")
 st.sidebar.write("Desarrollador: Yeison Smit")
