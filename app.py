@@ -1,64 +1,55 @@
 import streamlit as st
 import google.generativeai as genai
 from PIL import Image
+import os
 
-# Configuración directa y simple
-# Usamos el método más estable de conexión
-genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
+# Configuración de la página
+st.set_page_config(page_title="GTAMODE - Jesmith", layout="centered")
 
-st.set_page_config(page_title="API GTA - GTAMODE", page_icon="🚗")
+st.title("🎮 GTAMODE ACTIVATED")
+st.subheader("Fusiona tu estilo con la estética de GTA")
 
-st.title("🚗 API GTA")
-st.subheader("Transforma tu realidad al estilo Los Santos")
+# Recuperar la API KEY desde los Secrets de Hugging Face
+api_key = st.secrets["GEMINI_API_KEY"]
 
-st.divider()
+if not api_key:
+    st.error("Falta la GEMINI_API_KEY en los Secrets de Settings.")
+else:
+    genai.configure(api_key=api_key)
+    model = genai.GenerativeModel('gemini-1.5-flash')
 
-col1, col2 = st.columns(2)
+    col1, col2 = st.columns(2)
 
-with col1:
-    st.header("1. Entorno Real")
-    fondo = st.file_uploader("Sube la foto del lugar", type=['png', 'jpg', 'jpeg'])
-    if fondo:
-        st.image(fondo, caption="Fondo seleccionado")
+    with col1:
+        st.write("### 📸 Tu Foto")
+        img_persona = st.file_uploader("Sube tu foto aquí", type=['png', 'jpg', 'jpeg'], key="persona")
 
-with col2:
-    st.header("2. Vehículo GTA")
-    vehiculo = st.file_uploader("Sube el auto o moto de GTA", type=['png', 'jpg', 'jpeg'])
-    if vehiculo:
-        st.image(vehiculo, caption="Vehículo seleccionado")
+    with col2:
+        st.write("### 🏙️ Fondo de GTA")
+        img_fondo = st.file_uploader("Sube el fondo aquí", type=['png', 'jpg', 'jpeg'], key="fondo")
 
-st.divider()
-
-if st.button("🚀 ACTIVAR GTAMODE"):
-    if fondo and vehiculo:
-        with st.spinner("La IA está analizando la escena..."):
-            try:
-                # Cargamos las imágenes
-                img_fondo = Image.open(fondo)
-                img_vehiculo = Image.open(vehiculo)
-                
-                # LLAMADA DIRECTA AL MODELO ESTABLE
-                # Eliminamos 'models/' del nombre para ver si tu entorno lo prefiere así
-                model = genai.GenerativeModel('gemini-1.5-flash')
-                
-                prompt = "Fusiona estas imágenes al estilo GTA San Andreas. Describe la escena final."
-                
-                # Generamos el contenido
-                response = model.generate_content([prompt, img_fondo, img_vehiculo])
-                
-                st.success("¡GTAMODE Activado!")
-                st.write(response.text)
-                
-            except Exception as e:
-                # Si falla, intentamos con el nombre alternativo automáticamente
+    if img_persona and img_fondo:
+        if st.button("🚀 ACTIVAR GTAMODE"):
+            with st.spinner("Fusionando estilos..."):
                 try:
-                    model_alt = genai.GenerativeModel('gemini-pro-vision')
-                    response = model_alt.generate_content([prompt, img_fondo, img_vehiculo])
-                    st.success("¡GTAMODE Activado (vía backup)!")
+                    persona_pill = Image.open(img_persona)
+                    fondo_pill = Image.open(img_fondo)
+                    
+                    prompt = """
+                    Analiza a la persona en la primera imagen y el escenario en la segunda. 
+                    Crea una ilustración digital que fusione a ambos con el estilo artístico de Grand Theft Auto V (estilo Shintani/Rockstar Games). 
+                    Usa líneas marcadas, colores saturados y sombras tipo cel-shading. 
+                    Mantén la ropa y rasgos de la persona pero adaptados al arte del juego.
+                    """
+                    
+                    response = model.generate_content([prompt, persona_pill, fondo_pill])
+                    
+                    st.success("¡Resultado generado!")
                     st.write(response.text)
-                except:
-                    st.error(f"Error persistente: {e}")
-    else:
-        st.warning("Sube ambas imágenes.")
+                    # Nota: Gemini 1.5 Flash devuelve texto/descripción. 
+                    # Si quieres generación de imagen pura, necesitarías Imagen 3, 
+                    # pero por ahora esto validará que tu conexión funciona.
+                except Exception as e:
+                    st.error(f"Error al procesar: {e}")
 
-st.sidebar.write("Desarrollador: Jeison Smith")
+st.info("DESARROLLADO POR: JEISON SMITH")
