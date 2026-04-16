@@ -37,7 +37,7 @@ if st.button("🚀 ACTIVAR GTAMODE"):
                 img_vehiculo = Image.open(vehiculo)
                 
                 # Configuramos el modelo
-                model = genai.GenerativeModel('gemini-pro-vision')
+                model = genai.GenerativeModel('gemini-1.5-flash-latest')
                 
                 # Instrucción para la IA
                 prompt = (
