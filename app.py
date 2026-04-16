@@ -2,21 +2,25 @@ import streamlit as st
 import google.generativeai as genai
 from PIL import Image
 
-# Configuración de la API Key desde los Secrets de Streamlit
+# 1. Configuración de Seguridad y API
+# Asegúrate de tener GEMINI_API_KEY en los Secrets de Streamlit
 genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
 
+# 2. Configuración de la página
 st.set_page_config(page_title="API GTA - GTAMODE", page_icon="🚗")
 
 st.title("🚗 API GTA")
 st.subheader("Transforma tu realidad al estilo Los Santos")
+st.write("Sube tus imágenes para activar el **GTAMODE**.")
 
 st.divider()
 
+# 3. Columnas para subir archivos
 col1, col2 = st.columns(2)
 
 with col1:
     st.header("1. Entorno Real")
-    fondo = st.file_uploader("Sube la foto del lugar", type=['png', 'jpg', 'jpeg'])
+    fondo = st.file_uploader("Sube la foto de la calle o lugar", type=['png', 'jpg', 'jpeg'])
     if fondo:
         st.image(fondo, caption="Fondo seleccionado")
 
@@ -28,33 +32,35 @@ with col2:
 
 st.divider()
 
+# 4. Lógica del GTAMODE
 if st.button("🚀 ACTIVAR GTAMODE"):
     if fondo and vehiculo:
-        with st.spinner("Fusionando imágenes con estilo San Andreas..."):
+        with st.spinner("La IA está analizando tu escena estilo San Andreas..."):
             try:
-                # Cargamos las imágenes
+                # Cargar imágenes
                 img_fondo = Image.open(fondo)
                 img_vehiculo = Image.open(vehiculo)
                 
-                # Configuramos el modelo
+                # Configurar el modelo (usamos gemini-1.5-flash que es el más rápido)
                 model = genai.GenerativeModel('gemini-1.5-flash')
                 
                 # Instrucción para la IA
                 prompt = (
-                    "Analiza estas dos imágenes. La primera es un entorno real y la segunda es un vehículo de GTA. "
-                    "Describe detalladamente cómo se vería el vehículo integrado en ese entorno real, "
-                    "ajustando la iluminación, sombras y el estilo visual para que parezca una captura de GTA VI."
+                    "Actúa como un experto en edición de Grand Theft Auto. "
+                    "Analiza estas dos imágenes y describe cómo se vería el vehículo de la segunda imagen "
+                    "integrado perfectamente en el entorno de la primera. Menciona iluminación, "
+                    "estética de GTA y detalles cinematográficos."
                 )
                 
-                # Generamos la respuesta
+                # Generar contenido
                 response = model.generate_content([prompt, img_fondo, img_vehiculo])
                 
-                st.success("¡Análisis de GTAMODE completado!")
+                st.success("¡GTAMODE Activado con éxito!")
                 st.write(response.text)
                 
             except Exception as e:
-                st.error(f"Error al conectar con la IA: {e}")
+                st.error(f"Hubo un problema técnico: {e}")
     else:
-        st.warning("Faltan imágenes para procesar.")
+        st.warning("Por favor, asegúrate de subir ambas imágenes antes de activar.")
 
 st.sidebar.write("Desarrollador: Yeison Smit")
