@@ -3,8 +3,8 @@ import google.generativeai as genai
 from PIL import Image
 
 # 1. Configuración de Seguridad y API
-# Asegúrate de tener GEMINI_API_KEY en los Secrets de Streamlit
-genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
+# Forzamos el uso de la versión estable 'v1' para evitar el error 404
+genai.configure(api_key=st.secrets["GEMINI_API_KEY"], transport='rest')
 
 # 2. Configuración de la página
 st.set_page_config(page_title="API GTA - GTAMODE", page_icon="🚗")
